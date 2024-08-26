@@ -1,4 +1,4 @@
-#youTube TedEx channel EDA and predictive analysis 
+# youTube TedEx channel EDA and predictive analysis 
 
 The dataset offers a comprehensive collection of TEDx talks from the TedEx YouTube channel, featuring talks aimed at inspiring, educating, and sparking discussions on various important subjects. 
 
