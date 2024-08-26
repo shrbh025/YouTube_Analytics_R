@@ -1,7 +1,13 @@
 # YouTube TedEx channel EDA and predictive analysis 
+The case study will aim to perform EDA on various engagement statistics like views, likes, comments, duration, tags, etc. Also, determine the top-performing videos and what makes them popular. 
+Utilize Topic modeling ML models to identify prevalent themes or topics across TEDx videos.
 
-The dataset offers a comprehensive collection of TEDx talks from the TedEx YouTube channel, featuring talks aimed at inspiring, educating, and sparking discussions on various important subjects. 
-
+## Data Summary: 
+- The data is extracted using the Tuber Api.
+- The dataset offers a comprehensive collection of TEDx talks from the TedEx YouTube channel, featuring talks aimed at inspiring, educating, and sparking discussions on various important subjects.
+- Each entry includes details such as the video ID, publication time, title, description, tags, category ID, default audio language, duration, dimension, caption availability, licensed content status, view count, like count, favorite count, and comment count.
+- The dataset offers insights into the content and engagement metrics of these TedEx talk videos , showcasing diverse topics and audience responses.
+  
 ## Metrics:
 Descriptive Statistics: Analyzed engagement statistics including views, likes, and comments.  
 Performance and Engagement Metrics: Compared engagement metrics across categories, video duration, and tags.  
