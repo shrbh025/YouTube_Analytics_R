@@ -1,0 +1,881 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head></head><body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="container-fluid main-container">
+
+
+
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div>
+
+
+
+<h1 class="title toc-ignore">Youtube - TedEx</h1>
+<h4 class="author">Group 2</h4>
+
+</div>
+
+
+<hr/>
+<div class="section level1">
+<h1>Team Members</h1>
+<ul>
+<li><strong>Abha Sharma (asharma69)</strong><br/>
+</li>
+<li><strong>Ayush Rishi (arishi1)</strong><br/>
+</li>
+<li><strong>Siddhesh More (smore1)</strong><br/>
+</li>
+<li><strong>Tejraj Pawar (tpawar1)</strong><br/>
+</li>
+<li><strong>Rishika Chhabria (rchhabria3)</strong></li>
+</ul>
+</div>
+<div class="section level1">
+<h1>Problem description</h1>
+<ul>
+<li>It is challenging to make informational videos interesting and
+engaging. Our project aims to perform a case study on one of the most
+successful informational YouTube channels with over 202,000 videos
+called TEDx. The goal is to figure out the characteristics that make
+TEDx so successful so that other informational content creators can
+apply the same techniques.<br/>
+</li>
+<li>The case study will aim to perform EDA on various engagement
+statistics like views, likes, comments, duration, tags, etc. Also,
+determine the top-performing videos and what makes them popular. Utilize
+Topic modeling ML models to identify prevalent themes or topics across
+TEDx videos.</li>
+</ul>
+</div>
+<div class="section level1">
+<h1>Dataset URL</h1>
+<p><a rel="noopener" href="https://drive.google.com/file/d/1axjiv1r1O9dv0CMwlAj7Xap2cvCHX7Kj/view?usp=sharing" class="uri">https://drive.google.com/file/d/1axjiv1r1O9dv0CMwlAj7Xap2cvCHX7Kj/view?usp=sharing</a></p>
+</div>
+<div class="section level1">
+<h1>Data</h1>
+<div class="section level2">
+<h2>Summary</h2>
+<p>The dataset offers a comprehensive collection of TEDx talks from the
+TedEx YouTube channel, featuring talks aimed at inspiring, educating,
+and sparking discussions on various important subjects. Each entry
+includes details such as the video ID, publication time, title,
+description, tags, category ID, default audio language, duration,
+dimension, caption availability, licensed content status, view count,
+like count, favorite count, and comment count. The dataset offers
+insights into the content and engagement metrics of these TedEx talk
+videos , showcasing diverse topics and audience responses.</p>
+</div>
+<div class="section level2">
+<h2>Exploration</h2>
+<div class="section level3">
+<h3>Read post-processed data</h3>
+<pre class="r"><code>yt_df &lt;- readRDS(&quot;processed_youtube_df.rds&quot;)
+
+glimpse(yt_df)</code></pre>
+<pre><code>## Rows: 20,268
+## Columns: 12
+## $ Utc_Day_Part           &lt;chr&gt; &quot;Afternoon&quot;, &quot;Afternoon&quot;, &quot;Afternoon&quot;, &quot;Afterno…
+## $ Month                  &lt;chr&gt; &quot;March&quot;, &quot;March&quot;, &quot;March&quot;, &quot;March&quot;, &quot;March&quot;, &quot;M…
+## $ Day_Of_Week            &lt;chr&gt; &quot;Tuesday&quot;, &quot;Tuesday&quot;, &quot;Tuesday&quot;, &quot;Tuesday&quot;, &quot;Tu…
+## $ Title                  &lt;chr&gt; &quot;The Great Diffusion | Alex Lazarow | TEDxSonom…
+## $ Description            &lt;chr&gt; &quot;Over the last 150 years, unprecedented technol…
+## $ Tags                   &lt;chr&gt; &quot;Business,Economics,English,Entrepreneurship,Fu…
+## $ Duration_Minutes       &lt;dbl&gt; 10, 12, 11, 16, 16, 7, 6, 10, 12, 10, NA, 11, 1…
+## $ Default_Audio_Language &lt;chr&gt; &quot;en&quot;, &quot;en&quot;, &quot;en&quot;, &quot;en&quot;, &quot;en&quot;, &quot;en&quot;, &quot;pl&quot;, &quot;pl&quot;,…
+## $ Caption                &lt;lgl&gt; FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, FALSE,…
+## $ View_Count             &lt;dbl&gt; 77, 71, 313, 62, 180, 347, 119, 179, 90, 27419,…
+## $ Like_Count             &lt;dbl&gt; 3, 2, 13, 0, 10, 17, 4, 4, 3, 72, 1500, 18, 12,…
+## $ Comment_Count          &lt;dbl&gt; 0, 0, 4, 0, 0, 15, 1, 1, 0, 40, 49, 3, 0, 0, 5,…</code></pre>
+</div>
+<div class="section level3">
+<h3>Views vs Likes</h3>
+<pre class="r"><code>data_check &lt;- yt_df |&gt; select(-Description)
+
+
+p &lt;- ggplot(data_check, aes(x=View_Count/1e6, 
+                     y=Like_Count/1e3, 
+                     color=factor(Day_Of_Week),
+                     label1 = View_Count,
+                     label2 = Like_Count,
+                     label3 = Day_Of_Week)) +
+  geom_point(size=3) +
+  labs(x = &#39;Views (in millions )&#39;,
+       y = &#39;Likes (in thousands)&#39;,title = &#39;Scatter plot for views and likes comparison&#39;,
+       color = &quot;Days&quot;) +
+  theme_bw()
+
+ggplotly(p, tooltip = c(&quot;label1&quot;, &quot;label2&quot;, &quot;label3&quot;))</code></pre>
+<div class="plotly html-widget html-fill-item" style="width:672px;height:480px;"></div>
+
+</div>
+<div class="section level3">
+<h3>Languages</h3>
+<pre class="r"><code>#Language based bar and pie chart
+language_yt_df &lt;- yt_df |&gt; 
+  group_by(Default_Audio_Language) |&gt;
+  summarise(n = n()) |&gt; 
+  arrange(desc(n)) |&gt; 
+  slice_head(n = 10)
+
+language_lookup &lt;- data.frame(Language_Code = c(&quot;ar&quot;,&quot;en&quot;, &quot;es&quot;, &quot;fr&quot;, &quot;hi&quot;,&quot;it&quot;,&quot;pt&quot;,&quot;ro&quot;,&quot;tr&quot;,&quot;zh-CN&quot;),
+                              Language_Name = c(&quot;Arabic&quot;,&quot;English&quot;, &quot;Spanish&quot;, &quot;French&quot;, &quot;Hindi&quot;,&quot;Italian&quot;,&quot;Portuguese&quot;,&quot;Romanian&quot;,&quot;Turkish&quot;,&quot;Chinese (PRC)&quot;))
+
+
+language_yt_df &lt;- merge(language_yt_df, language_lookup, by.x = &quot;Default_Audio_Language&quot;, by.y = &quot;Language_Code&quot;, all.x = TRUE)
+
+#bar chart
+ggplot(language_yt_df) +
+  geom_bar(aes(x = Default_Audio_Language, y = n, fill = Default_Audio_Language), stat = &#39;identity&#39;) +
+  scale_y_continuous(labels = scales::comma) +
+  labs(x = &#39;Language&#39;, y = &#39;Frequency&#39;, title = &#39;Top 10 languages&#39;) +
+  theme(plot.title = element_text(hjust = 0.5), 
+        axis.text.x = element_text(hjust = 1),
+        legend.title = element_blank()) +
+  scale_fill_discrete(name = &quot;Language&quot;, labels = paste(language_yt_df$Default_Audio_Language, &quot;:&quot;, language_yt_df$Language_Name))</code></pre>
+<p><img src="javascript://" width="672"/></p>
+</div>
+<div class="section level3">
+<h3>Day of Week</h3>
+<pre class="r"><code>days_df &lt;- yt_df |&gt; group_by(Day_Of_Week) |&gt;
+  summarise(n = n())|&gt;
+  mutate(percentage = round(n / sum(n), 2)) |&gt;
+  mutate(label_perc = scales::percent(percentage))
+
+
+
+plotly::plot_ly(days_df)%&gt;%
+add_pie(days_df,labels=~factor(Day_Of_Week),values=~n,
+        textinfo=&quot;label+percent&quot;,type=&#39;pie&#39;,hole=0.3)%&gt;%
+layout(title=&quot;Exploring Daily Data&quot;,margin = list(t = 50))</code></pre>
+<div class="plotly html-widget html-fill-item" style="width:672px;height:480px;"></div>
+
+</div>
+<div class="section level3">
+<h3>Part of Day (UTC)</h3>
+<pre class="r"><code>#Most uploaded at which time
+
+time_df &lt;- yt_df |&gt; group_by(Utc_Day_Part) |&gt;
+  summarise(n = n()) |&gt;
+  mutate(percentage = n / sum(n)) |&gt;
+  mutate(label_perc = scales::percent(percentage))
+
+plotly::plot_ly(time_df)%&gt;%
+add_pie(days_df,labels=~factor(Utc_Day_Part),values=~percentage,
+        textinfo=&quot;label+percent&quot;,type=&#39;pie&#39;)%&gt;%
+layout(title=&quot;Frequency of Video Upload&quot;,
+       showlegend = TRUE, legend = list(title = list(text = &quot;Times of (the) day&quot;)),margin = list(t = 50))</code></pre>
+<div class="plotly html-widget html-fill-item" style="width:672px;height:480px;"></div>
+
+</div>
+<div class="section level3">
+<h3>Most viewed vs Duration</h3>
+<pre class="r"><code>mvideo &lt;- yt_df |&gt; select(-Description) |&gt; arrange(desc(yt_df$View_Count)) 
+
+top_mvideo &lt;- mvideo[1:10,]
+
+#time duration of most viewed videos
+ggplot(top_mvideo, aes(y=reorder(Title, Duration_Minutes), x =Duration_Minutes ), stat = &#39;identity&#39;) +
+  geom_point() +
+  labs(x= &#39;Video length (in mins)&#39;, y = &#39;Video Titles&#39;, title = &#39;Time duration for most viewed videos&#39;) +
+  theme(plot.title = element_text(hjust = 2),
+        axis.text.x = element_text(hjust = 1))</code></pre>
+<p><img src="javascript://" width="672"/></p>
+</div>
+<div class="section level3">
+<h3>Video Tags Word Cloud</h3>
+<pre class="r"><code>#Top words in tags
+tag_df &lt;- yt_df %&gt;%
+  separate_rows(Tags, sep = &quot;,&quot;) %&gt;%
+  mutate(tags = str_replace_all(Tags, &#39;&quot;&#39;, &quot;&quot;)) %&gt;%
+  group_by(tags) %&gt;%
+  summarise(n = n()) %&gt;%
+  filter(!(tags %in% c(&quot;s&quot;, &quot;the&quot;, &quot;The&quot;, &quot;and&quot;, &quot;or&quot;, &quot;a&quot;, &quot;-&quot;, &quot;&quot;,&quot;English&quot;)))
+
+wordcloud(words = tag_df$tags, freq = tag_df$n, max.words = 100, random.order = FALSE,
+          colors=brewer.pal(6, &quot;Dark2&quot;))</code></pre>
+<p><img src="javascript://" width="672"/></p>
+</div>
+<div class="section level3">
+<h3>Engagement metrics by video duration</h3>
+<pre class="r"><code>emetrics_df &lt;- yt_df |&gt;
+  select(Like_Count,Comment_Count,View_Count,Duration_Minutes,Utc_Day_Part, Day_Of_Week,) |&gt;
+  mutate(Engagement_Rate = ((Like_Count + Comment_Count) / View_Count) * 100) |&gt;
+  mutate(week_index = case_when(
+    Day_Of_Week == &quot;Monday&quot; ~ 1,
+    Day_Of_Week == &quot;Tuesday&quot; ~ 2,
+    Day_Of_Week == &quot;Wednesday&quot; ~ 3,
+    Day_Of_Week == &quot;Thursday&quot; ~ 4, Day_Of_Week == &quot;Friday&quot; ~ 5, Day_Of_Week == &quot;Saturday&quot; ~ 6, 
+    Day_Of_Week == &quot;Sunday&quot; ~ 7
+    ))
+
+  gg&lt;- ggplot(emetrics_df,  aes(x=Duration_Minutes, y=Engagement_Rate, color=Utc_Day_Part)) +
+    geom_line() +
+    geom_point() +
+    scale_color_viridis(discrete = TRUE) +
+    ggtitle(&quot;Engagement Rate by Video Duration&quot;) +
+    guides(color = guide_legend(title = &quot;Times of (the) day&quot;)) +
+    labs(&quot;Engagement_Rate&quot;)
+
+ggplotly(gg)</code></pre>
+<div class="plotly html-widget html-fill-item" style="width:672px;height:480px;"></div>
+
+</div>
+<div class="section level3">
+<h3>Engagement metrics by day of week</h3>
+<pre class="r"><code>emd &lt;- ggplot(emetrics_df,  aes(x=Day_Of_Week, y=Engagement_Rate, group=Duration_Minutes, color=Duration_Minutes,
+                                label1 = Day_Of_Week,
+                     label2 = Engagement_Rate,
+                     label3 = Duration_Minutes)) +
+    geom_line() +
+    geom_point() +
+    scale_color_viridis(discrete = FALSE) +
+    ggtitle(&quot;Daily Engagement Rate&quot;) +
+    labs(
+    x = &quot;Days (of week)&quot;,
+    y = &quot;Rate of Engagement (in %)&quot;,
+    )
+
+
+ggplotly(emd, tooltip = c(&quot;label1&quot;, &quot;label2&quot;, &quot;label3&quot;))</code></pre>
+<div class="plotly html-widget html-fill-item" style="width:672px;height:480px;"></div>
+
+</div>
+</div>
+<div class="section level2">
+<h2>Discussion:</h2>
+<ul>
+<li>There appears to be no correlation between views and likes,
+suggesting that the most viewed videos may not necessarily be the most
+liked ones.</li>
+<li>English is the most frequently used language for video uploads,
+followed by Spanish.</li>
+<li>Video uploads are more common on weekdays compared to weekends.</li>
+<li>The majority of videos are uploaded during the afternoon (UTC),
+accounting for nearly 80% of uploads, followed by the evening (UTC) with
+approximately 19%.</li>
+<li>The top 10 most viewed videos attract viewership ranging from 5 to
+25 million, with duration spanning from approximately 6 to 30
+minutes.</li>
+<li>Tags such as “Life,” “Empowerment,” “Happiness,” “Health,” and
+“Leadership” are popular among the most viewed videos.</li>
+<li>According to engagement metrics, videos uploaded during the
+afternoon (UTC) with duration ranging from 10 to 15 minutes tend to
+receive the highest engagement.<br/>
+</li>
+<li>Additionally, the data suggests that videos uploaded on Thursdays
+generally have the highest engagement rates, followed by those uploaded
+on Mondays.</li>
+</ul>
+</div>
+<div class="section level2">
+<h2>AI/ML procedure</h2>
+<div class="section level3">
+<h3>Research Question: What tags should I use for my content?</h3>
+<div class="section level4">
+<h4>Output: Tags</h4>
+</div>
+<div class="section level4">
+<h4>Model: Topic Modeling</h4>
+<pre class="r"><code>topicModel &lt;- readRDS(&quot;4-topic-modeling.rds&quot;)
+word_probs &lt;- topicModel %&gt;%
+  group_by(topic) %&gt;%
+  top_n(15, beta) %&gt;%
+  ungroup() %&gt;%
+  mutate(term = fct_reorder(term, beta)) %&gt;%
+  head(50)
+
+ggplot(
+  word_probs,
+  aes(term, beta, fill=as.factor(topic))
+) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = &quot;free&quot;) +
+  coord_flip()</code></pre>
+<p><img src="javascript://" width="672"/></p>
+</div>
+</div>
+<div class="section level3">
+<h3>Research Question: When should I upload my video to boost
+engagement?</h3>
+<div class="section level4">
+<h4>Output: UTC_Day_Part (Factor)</h4>
+</div>
+<div class="section level4">
+<h4>Model: Deeplearning</h4>
+<pre class="r"><code>dl &lt;- h2o.loadModel(&quot;4-dl-model-day-part.h2o&quot;)
+plot(dl)</code></pre>
+<p><img src="javascript://" width="672"/></p>
+<pre class="r"><code>summary(dl)</code></pre>
+<pre><code>## Model Details:
+## ==============
+## 
+## H2OMultinomialModel: deeplearning
+## Model Key:  dl_grid_random_model_30 
+## Status of Neuron Layers: predicting Utc_Day_Part, 4-class classification, multinomial distribution, CrossEntropy loss, 7,354 weights/biases, 94.0 KB, 2,499,262 training samples, mini-batch size 1
+##   layer units      type dropout       l1       l2 mean_rate rate_rms momentum
+## 1     1    91     Input  5.00 %       NA       NA        NA       NA       NA
+## 2     2    50 Rectifier  0.00 % 0.000099 0.000016  0.087838 0.255171 0.000000
+## 3     3    50 Rectifier  0.00 % 0.000099 0.000016  0.134459 0.255587 0.000000
+## 4     4     4   Softmax      NA 0.000099 0.000016  0.473911 0.459890 0.000000
+##   mean_weight weight_rms mean_bias bias_rms
+## 1          NA         NA        NA       NA
+## 2   -0.004564   0.260336 -0.316184 0.375340
+## 3    0.001393   0.272154 -0.318612 0.437224
+## 4   -0.029094   0.426311 -0.003375 0.342988
+## 
+## H2OMultinomialMetrics: deeplearning
+## ** Reported on training data. **
+## ** Metrics reported on temporary training frame with 10057 samples **
+## 
+## Training Set Metrics: 
+## =====================
+## 
+## MSE: (Extract with `h2o.mse`) 0.1120396
+## RMSE: (Extract with `h2o.rmse`) 0.3347232
+## Logloss: (Extract with `h2o.logloss`) 0.3882749
+## Mean Per-Class Error: 0.3930893
+## AUC: (Extract with `h2o.auc`) NaN
+## AUCPR: (Extract with `h2o.aucpr`) NaN
+## Confusion Matrix: Extract with `h2o.confusionMatrix(&lt;model&gt;,train = TRUE)`)
+## =========================================================================
+## Confusion Matrix: Row labels: Actual class; Column labels: Predicted class
+##           Afternoon Evening Morning Night  Error             Rate
+## Afternoon      7420     633       0     0 0.0786 =    633 / 8,053
+## Evening         988    1013       0     0 0.4938 =    988 / 2,001
+## Morning           3       0       0     0 1.0000 =          3 / 3
+## Night             0       0       0     0     NA =          0 / 0
+## Totals         8411    1646       0     0 0.1615 = 1,624 / 10,057
+## 
+## Hit Ratio Table: Extract with `h2o.hit_ratio_table(&lt;model&gt;,train = TRUE)`
+## =======================================================================
+## Top-4 Hit Ratios: 
+##   k hit_ratio
+## 1 1  0.838520
+## 2 2  0.999702
+## 3 3  1.000000
+## 4 4  1.000000
+## 
+## 
+## 
+## 
+## H2OMultinomialMetrics: deeplearning
+## ** Reported on validation data. **
+## ** Metrics reported on full validation frame **
+## 
+## Validation Set Metrics: 
+## =====================
+## 
+## MSE: (Extract with `h2o.mse`) 0.1164098
+## RMSE: (Extract with `h2o.rmse`) 0.3411888
+## Logloss: (Extract with `h2o.logloss`) 0.4170286
+## Mean Per-Class Error: 0.3928899
+## AUC: (Extract with `h2o.auc`) NaN
+## AUCPR: (Extract with `h2o.aucpr`) NaN
+## Confusion Matrix: Extract with `h2o.confusionMatrix(&lt;model&gt;,valid = TRUE)`)
+## =========================================================================
+## Confusion Matrix: Row labels: Actual class; Column labels: Predicted class
+##           Afternoon Evening Morning Night  Error          Rate
+## Afternoon      2881     268       0     0 0.0851 = 268 / 3,149
+## Evening         395     417       0     0 0.4865 =   395 / 812
+## Morning           3       0       0     0 1.0000 =       3 / 3
+## Night             0       0       0     0     NA =       0 / 0
+## Totals         3279     685       0     0 0.1680 = 666 / 3,964
+## 
+## Hit Ratio Table: Extract with `h2o.hit_ratio_table(&lt;model&gt;,valid = TRUE)`
+## =======================================================================
+## Top-4 Hit Ratios: 
+##   k hit_ratio
+## 1 1  0.831988
+## 2 2  0.998991
+## 3 3  0.999748
+## 4 4  1.000000
+## 
+## 
+## 
+## 
+## 
+## 
+## Scoring History: 
+##             timestamp          duration training_speed    epochs iterations
+## 1 2024-04-23 14:19:02         0.000 sec             NA   0.00000          0
+## 2 2024-04-23 14:19:02  5 min 56.452 sec 176386 obs/sec   6.13414          1
+## 3 2024-04-23 14:19:07  6 min  1.490 sec 376879 obs/sec 128.75491         21
+## 4 2024-04-23 14:19:08  6 min  2.460 sec 384029 obs/sec 153.29134         25
+##          samples training_rmse training_logloss training_r2
+## 1       0.000000            NA               NA          NA
+## 2  100011.000000       0.36499          0.42639     0.16910
+## 3 2099220.000000       0.34597          0.43676     0.25347
+## 4 2499262.000000       0.33472          0.38827     0.30121
+##   training_classification_error training_auc training_pr_auc validation_rmse
+## 1                            NA           NA              NA              NA
+## 2                       0.18783           NA              NA         0.36532
+## 3                       0.16735           NA              NA         0.35692
+## 4                       0.16148           NA              NA         0.34119
+##   validation_logloss validation_r2 validation_classification_error
+## 1                 NA            NA                              NA
+## 2            0.42417       0.19257                         0.18870
+## 3            0.48608       0.22925                         0.18063
+## 4            0.41703       0.29571                         0.16801
+##   validation_auc validation_pr_auc
+## 1             NA                NA
+## 2             NA                NA
+## 3             NA                NA
+## 4             NA                NA
+## 
+## Variable Importances: (Extract with `h2o.varimp`) 
+## =================================================
+## 
+## Variable Importances: 
+##         variable relative_importance scaled_importance percentage
+## 1 Month.February            1.000000          1.000000   0.030068
+## 2 Month.December            0.851370          0.851370   0.025599
+## 3  Month.January            0.819907          0.819907   0.024653
+## 4    Month.March            0.793404          0.793404   0.023856
+## 5 Month.November            0.707472          0.707472   0.021272
+## 
+## ---
+##                              variable relative_importance scaled_importance
+## 86          Default_Audio_Language.sv            0.179966          0.179966
+## 87                      Caption.FALSE            0.143283          0.143283
+## 88 Default_Audio_Language.missing(NA)            0.000000          0.000000
+## 89                  Month.missing(NA)            0.000000          0.000000
+## 90            Day_Of_Week.missing(NA)            0.000000          0.000000
+## 91                Caption.missing(NA)            0.000000          0.000000
+##    percentage
+## 86   0.005411
+## 87   0.004308
+## 88   0.000000
+## 89   0.000000
+## 90   0.000000
+## 91   0.000000</code></pre>
+</div>
+</div>
+</div>
+<div class="section level2">
+<h2>AI/ML procedure summary</h2>
+<div class="section level3">
+<h3>Research Question: What should be the duration length for my
+video?</h3>
+<div class="section level4">
+<h4>Output: Duration_Minutes (Numerical)</h4>
+</div>
+<div class="section level4">
+<h4>Model: Gradient Boosting Machine</h4>
+<pre class="r"><code>gbm &lt;- h2o.loadModel(&quot;4-gbm-model-duration.h2o&quot;)
+plot(gbm)</code></pre>
+<p><img src="javascript://" width="672"/></p>
+<pre class="r"><code>summary(gbm)</code></pre>
+<pre><code>## Model Details:
+## ==============
+## 
+## H2ORegressionModel: gbm
+## Model Key:  dl_grid_random_gbm_model_5 
+## Model Summary: 
+##   number_of_trees number_of_internal_trees model_size_in_bytes min_depth
+## 1             166                      166              171423         0
+##   max_depth mean_depth min_leaves max_leaves mean_leaves
+## 1         7    6.95783          1        111    65.78915
+## 
+## H2ORegressionMetrics: gbm
+## ** Reported on training data. **
+## 
+## MSE:  13.72511
+## RMSE:  3.704742
+## MAE:  2.94675
+## RMSLE:  0.3210355
+## Mean Residual Deviance :  13.72511
+## 
+## 
+## H2ORegressionMetrics: gbm
+## ** Reported on validation data. **
+## ** Validation metrics **
+## 
+## MSE:  16.1399
+## RMSE:  4.01745
+## MAE:  3.219932
+## RMSLE:  0.3512147
+## Mean Residual Deviance :  16.1399
+## 
+## 
+## 
+## 
+## Scoring History: 
+##             timestamp   duration number_of_trees training_rmse training_mae
+## 1 2024-04-23 13:55:28  3.174 sec               0       4.49416      3.64999
+## 2 2024-04-23 13:55:28  3.184 sec               1       4.45102      3.61660
+## 3 2024-04-23 13:55:28  3.202 sec               2       4.41182      3.58537
+## 4 2024-04-23 13:55:28  3.218 sec               3       4.37593      3.55716
+## 5 2024-04-23 13:55:28  3.232 sec               4       4.34308      3.53119
+##   training_deviance validation_rmse validation_mae validation_deviance
+## 1          20.19743         4.51810        3.65610            20.41321
+## 2          19.81155         4.47702        3.62512            20.04371
+## 3          19.46418         4.44000        3.59653            19.71356
+## 4          19.14880         4.40697        3.57210            19.42142
+## 5          18.86237         4.37671        3.54997            19.15562
+## 
+## ---
+##               timestamp   duration number_of_trees training_rmse training_mae
+## 162 2024-04-23 13:55:29  4.205 sec             161       3.70932      2.95133
+## 163 2024-04-23 13:55:29  4.214 sec             162       3.70777      2.94983
+## 164 2024-04-23 13:55:29  4.223 sec             163       3.70605      2.94813
+## 165 2024-04-23 13:55:29  4.229 sec             164       3.70546      2.94748
+## 166 2024-04-23 13:55:29  4.234 sec             165       3.70474      2.94675
+## 167 2024-04-23 13:55:29  4.238 sec             166       3.70474      2.94675
+##     training_deviance validation_rmse validation_mae validation_deviance
+## 162          13.75905         4.01785        3.22045            16.14311
+## 163          13.74757         4.01768        3.22046            16.14174
+## 164          13.73480         4.01748        3.22004            16.14014
+## 165          13.73045         4.01756        3.22005            16.14080
+## 166          13.72511         4.01745        3.21993            16.13990
+## 167          13.72511         4.01745        3.21993            16.13990
+## 
+## Variable Importances: (Extract with `h2o.varimp`) 
+## =================================================
+## 
+## Variable Importances: 
+##                 variable relative_importance scaled_importance percentage
+## 1 Default_Audio_Language       386865.218750          1.000000   0.357446
+## 2                Caption       232510.437500          0.601011   0.214829
+## 3                  Month       179797.671875          0.464755   0.166125
+## 4            Day_Of_Week        94955.093750          0.245447   0.087734
+## 5          Comment_Count        80285.093750          0.207527   0.074180
+## 6             Like_Count        51444.121094          0.132977   0.047532
+## 7             View_Count        37851.964844          0.097843   0.034973
+## 8           Utc_Day_Part        18595.736328          0.048068   0.017182</code></pre>
+</div>
+</div>
+</div>
+<div class="section level2">
+<h2>AI/ML result and discussion</h2>
+<div class="section level3">
+<h3>Split the Independent and dependent variable for Deep Learning</h3>
+</div>
+<div class="section level3">
+<h3>Split the Independent and dependent variable for Gradient Boosting
+Machines</h3>
+</div>
+<div class="section level3">
+<h3>New observation</h3>
+<pre class="r"><code>x_test_data &lt;- data.frame(
+  Utc_Day_Part = &quot;Evening&quot;,
+  Month = &quot;February&quot;,
+  Day_Of_Week = &quot;Friday&quot;,
+  Duration_Minutes = 14,
+  Default_Audio_Language = &quot;en&quot;,
+  Caption = FALSE,
+  View_Count = 24904,
+  Like_Count = 658,
+  Comment_Count = 50
+)
+
+new_observation_tbl_skim = partition(skim(x_test_data))
+names(new_observation_tbl_skim)</code></pre>
+<pre><code>## [1] &quot;character&quot; &quot;logical&quot;   &quot;numeric&quot;</code></pre>
+<pre class="r"><code>string_2_factor_names_new_observation &lt;- new_observation_tbl_skim$character$skim_variable
+rec_obj_new_observation &lt;- recipe(~ ., data = x_test_data) |&gt;
+  step_string2factor(all_of(string_2_factor_names_new_observation)) |&gt;
+  step_impute_median(all_numeric()) |&gt; # missing values in numeric columns
+  step_impute_mode(all_nominal()) |&gt; # missing values in factor columns
+  prep()
+new_observation_processed_tbl &lt;- bake(rec_obj_new_observation, x_test_data)
+new_application = new_observation_processed_tbl</code></pre>
+</div>
+<div class="section level3">
+<h3>Deep Learning XAI</h3>
+<pre class="r"><code>h2o_exp_dl = explain_h2o(
+dl, data = x_train_tbl_dl,
+y = y_train_tbl_dl$Utc_Day_Part == 1,
+label = &quot;H2O&quot;, type = &quot;classification&quot;)</code></pre>
+<div class="section level4">
+<h4>Ceteris-paribus Profiles</h4>
+<pre class="r"><code>h2o_exp_dl_cp &lt;- predict_profile(
+  explainer = h2o_exp_dl, new_observation = new_application)</code></pre>
+<pre><code>##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%</code></pre>
+<pre class="r"><code>plot(h2o_exp_dl_cp, variables = c(&quot;View_Count&quot;,&quot;Duration_Minutes&quot;)) +
+ggtitle(&quot;View_Count&quot;)</code></pre>
+<p><img src="javascript://" width="672"/></p>
+</div>
+</div>
+<div class="section level3">
+<h3>Gradient Boosting Machine XAI</h3>
+<pre class="r"><code>h2o_exp_gbm = explain_h2o(
+gbm, data = x_train_tbl_gbm,
+y = y_train_tbl_gbm$Duration.Minutes == 10,
+label = &quot;H2O&quot;, type = &quot;regression&quot;)</code></pre>
+<pre><code>## Preparation of a new explainer is initiated
+##   -&gt; model label       :  H2O 
+##   -&gt; data              :  20268  rows  11  cols 
+##   -&gt; target variable   :  0  values 
+##   -&gt; target variable   :  length of &#39;y&#39; is different than number of rows in &#39;data&#39; (  WARNING  ) 
+##   -&gt; predict function  :  yhat.H2ORegressionModel  will be used (  default  )
+##   -&gt; predicted values  :  No value for predict function target column. (  default  )
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   -&gt; model_info        :  package h2o , ver. 3.44.0.3 , task regression (  default  ) 
+##   -&gt; model_info        :  type set to  regression 
+##   -&gt; model_info        :  Model info detected regression task but &#39;y&#39; is a logical .  (  WARNING  )
+##   -&gt; model_info        :  By deafult regressions tasks supports only numercical &#39;y&#39; parameter. 
+##   -&gt; model_info        :  Consider changing to numerical vector.
+##   -&gt; model_info        :  Otherwise I will not be able to calculate residuals or loss function.
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   -&gt; predicted values  :  numerical, min =  3.023098 , mean =  12.71085 , max =  21.88054  
+##   -&gt; residual function :  difference between y and yhat (  default  )
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   -&gt; residuals         :  numerical, min =  Inf , mean =  NaN , max =  -Inf  
+##   A new explainer has been created!</code></pre>
+<div class="section level4">
+<h4>SHAP</h4>
+<pre class="r"><code>h2o_exp_gbm_shap &lt;- predict_parts(
+explainer = h2o_exp_gbm, new_observation = new_application,
+type = &quot;shap&quot;, B = 5)</code></pre>
+<pre><code>##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%</code></pre>
+<pre class="r"><code>plot(h2o_exp_gbm_shap) + ggtitle(&quot;SHAP explaination&quot;)</code></pre>
+<p><img src="javascript://" width="672"/></p>
+</div>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="module" src="https://s.brightspace.com/lib/bsi/20.24.3-265/unbundled/mathjax.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+					if (document.querySelector('math') || /\$\$|\\\(|\\\[|\\begin{|\\ref{|\\eqref{/.test(document.body.innerHTML)) {
+						document.querySelectorAll('mspace[linebreak="newline"]').forEach(elm => {
+							elm.setAttribute('style', 'display: block; height: 0.5rem;');
+						});
+
+						window.D2L.MathJax.loadMathJax({
+							'outputScale': 1.5,
+							'renderLatex': false
+						});
+					}
+				});</script><script type="module" src="https://s.brightspace.com/lib/bsi/20.24.3-265/unbundled/prism.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+					document.querySelectorAll('.d2l-code').forEach(code => {
+						window.D2L.Prism.formatCodeElement(code);
+					});
+				});</script></body></html>
