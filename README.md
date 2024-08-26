@@ -18,3 +18,7 @@ Trend Analysis: Examined trends in viewership and engagement over time.
 - Data Extraction and Parsing: tuber, httr, jsonlite, tidyverse, skimr, recipes, dplyr, tidyr, lubridate  
 - Machine Learning: h2o  
 - Visualization: plotly, ggplot2  
+
+![Alt text](https://github.com/shrbh025/YouTube_Analytics_R/blob/main/images/DE_screenshot1.png)
+![Alt text](https://github.com/shrbh025/YouTube_Analytics_R/blob/main/images/DE_2.png)
+![Alt text](https://github.com/shrbh025/YouTube_Analytics_R/blob/main/images/DE_3.png)
